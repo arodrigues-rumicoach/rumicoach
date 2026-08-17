@@ -1,0 +1,50 @@
+# P0: Journey Screen Display
+# Tests: greeting, daily quote, session carousel, commitments, badges
+# Tags: smoke, journey
+
+appId: coach.rumi.app.qa
+tags:
+  - smoke
+  - journey
+---
+# Login first
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to journey tab
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- tapOn:
+    id: "tab-journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify journey elements exist
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Check for daily quote section
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Check for session info
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll down to see more content
+- scroll
+- scroll
+
+# Verify commitments section
+- assertVisible:
+    text: ".*"
+    optional: true

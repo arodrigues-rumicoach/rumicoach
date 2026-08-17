@@ -1,0 +1,15 @@
+.git
+.gitignore
+.dockerignore
+.idea
+.DS_Store
+.env
+.env.*
+*.log
+*.log.bak*
+tmp/
+old_python_version/
+gcp-key.json
+coverage.out
+coverage.html
+README.md

@@ -1,0 +1,36 @@
+# Helper: Navigate to a tab
+# Usage: maestro test helpers/navigate-to-tab.yaml -e tab=journey
+# Supported tabs: journey, session, memories, profile
+
+appId: coach.rumi.app.qa
+---
+- runFlow:
+    when:
+      visible: "Journey"
+    commands:
+      - tapOn:
+          text: "Journey"
+
+- runFlow:
+    when:
+      visible: "Session"
+    commands:
+      - tapOn:
+          text: "Session"
+
+- runFlow:
+    when:
+      visible: "Memories"
+    commands:
+      - tapOn:
+          text: "Memories"
+
+- runFlow:
+    when:
+      visible: "Profile"
+    commands:
+      - tapOn:
+          text: "Profile"
+
+- waitForAnimationToEnd:
+    timeout: 3000

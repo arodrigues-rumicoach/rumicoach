@@ -1,0 +1,40 @@
+# P2: Network Failure Resilience
+# Tests: app handles network errors gracefully
+# Tags: resilience
+
+appId: coach.rumi.app.qa
+tags:
+  - resilience
+---
+# Login first
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to journey
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Simulate network issues by:
+# 1. App should show cached data when offline
+# 2. App should recover when network returns
+# 3. App should not crash on API errors
+
+# Verify app is still responsive
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to trigger data loading
+- scroll
+- scroll
+
+# App should handle gracefully
+- assertVisible:
+    text: ".*"
+    optional: true

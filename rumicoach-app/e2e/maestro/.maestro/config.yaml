@@ -1,0 +1,52 @@
+# Maestro E2E Test Configuration for RumiCoach
+# https://maestro.mobile.dev/
+
+appId: coach.rumi.app.qa
+
+# Build variant for E2E testing
+# Set to 'debug' for development, 'release' for CI
+buildVariant: debug
+
+# Global test settings
+env:
+  # Mock server must be running before tests execute
+  MOCK_SERVER_URL: "http://localhost:3001"
+  # Default test user credentials
+  TEST_EMAIL: "e2e-test@rumi.coach"
+  TEST_PHONE: "+351912345678"
+  TEST_PASSWORD: "123456"
+
+# Tags for filtering tests
+# Run with: maestro test --include-tag=smoke
+tags:
+  - smoke
+  - auth
+  - journey
+  - session
+  - memories
+  - profile
+  - settings
+  - resilience
+
+# Android-specific configuration
+android:
+  # Use specific API level for CI consistency
+  apiLevel: 33
+
+# iOS-specific configuration
+ios:
+  # Use specific simulator for CI
+  simulator: "iPhone 15"
+
+# Test execution settings
+executionOrder:
+  # Run auth tests first (other tests depend on auth state)
+  - auth
+  # Then core flows
+  - journey
+  - session
+  - memories
+  - profile
+  - settings
+  # Resilience tests last
+  - resilience

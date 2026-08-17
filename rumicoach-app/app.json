@@ -1,0 +1,121 @@
+{
+  "expo": {
+    "name": "Rumi Coach",
+    "slug": "rumicoach",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": [
+      "rumi"
+    ],
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "coach.rumi.app.qa",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Rumi needs microphone access for voice coaching sessions.",
+        "NSSpeechRecognitionUsageDescription": "Rumi uses speech recognition to understand your coaching needs.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "appleTeamId": "WY943M5DF7"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#ffffff",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "googleServicesFile": "./plugins/google-services.json",
+      "predictiveBackGestureEnabled": false,
+      "package": "coach.rumi.app.qa",
+      "versionCode": 200,
+      "permissions": [
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "POST_NOTIFICATIONS",
+        "com.android.vending.BILLING"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Manrope-Regular.ttf",
+            "./assets/fonts/Manrope-SemiBold.ttf",
+            "./assets/fonts/Manrope-Bold.ttf"
+          ]
+        }
+      ],
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "largeHeap": true
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "expo-audio",
+      "expo-status-bar",
+      "expo-video",
+      "expo-web-browser",
+      "expo-dev-client",
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF",
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain"
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "@react-native-firebase/analytics",
+      "@react-native-firebase/crashlytics",
+      "@react-native-google-signin/google-signin",
+      "expo-apple-authentication",
+      "./plugins/withTransparentNavBar",
+      "./plugins/withoutPushNotifications",
+      "./plugins/withReleaseSigning",
+      "./plugins/withIosManualSigning",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Rumi uses your photos so you can attach a screenshot to a bug report."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Rumi notices when you shake your phone, so you can report a problem from anywhere in the app."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    },
+    "owner": "andrerumi"
+  }
+}

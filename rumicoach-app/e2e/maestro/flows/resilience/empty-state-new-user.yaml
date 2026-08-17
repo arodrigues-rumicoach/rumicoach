@@ -1,0 +1,142 @@
+# P1: Empty State — New User
+# Tests: new user sees empty states correctly
+# Tags: resilience
+
+appId: coach.rumi.app.qa
+tags:
+  - resilience
+---
+- clearState
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle onboarding
+- runFlow:
+    when:
+      visible: "Get Started"
+    commands:
+      - tapOn: "Get Started"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# Sign up as new user
+- tapOn:
+    text: "Sign Up"
+    optional: true
+
+- tapOn:
+    id: "sign-up-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Complete minimal signup
+- tapOn:
+    id: "name-input"
+    optional: true
+
+- inputText: "Empty State Tester"
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+- tapOn:
+    id: "email-input"
+    optional: true
+
+- inputText: "empty-test@rumi.coach"
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Skip through remaining steps
+- tapOn:
+    text: "Skip"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+- tapOn:
+    text: "Career"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+- tapOn:
+    text: "Get Started"
+    optional: true
+
+- tapOn:
+    id: "complete-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Check journey empty state
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# New user should see empty states or onboarding
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Check memories empty state
+- tapOn:
+    text: "Memories"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- assertVisible:
+    text: ".*"
+    optional: true

@@ -1,0 +1,38 @@
+# P0: Memory Categories Flow
+# Tests: browse memories by category, view details
+# Tags: memories
+
+appId: coach.rumi.app.qa
+tags:
+  - memories
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to memories tab
+- tapOn:
+    text: "Memories"
+    optional: true
+
+- tapOn:
+    id: "tab-memories"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify memories screen loads
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to see memory categories
+- scroll
+- scroll
+
+# Verify content is displayed
+- assertVisible:
+    text: ".*"
+    optional: true

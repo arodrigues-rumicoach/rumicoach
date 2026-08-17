@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Rumi — Play feature graphic</title>
+<style>
+  /* Rendered at exactly 1024x500, the only size Play accepts for a feature graphic. */
+  @font-face { font-family: 'Fraunces'; src: url('../../assets/fonts/Fraunces-SemiBold.ttf'); font-weight: 600; }
+  @font-face { font-family: 'Manrope';  src: url('../../assets/fonts/Manrope-Regular.ttf');  font-weight: 400; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1024px; height: 500px; overflow: hidden; }
+
+  .stage { position: relative; width: 1024px; height: 500px; }
+
+  /* The source atmosphere art is 800x533, so it upscales ~1.3x. The blur turns that
+     softness into an intentional depth-of-field rather than a visible artefact, and it
+     keeps the wordmark the only sharp thing in frame. */
+  .bg {
+    position: absolute; inset: -40px;
+    background: url('../../assets/theme/mountain_lake.jpg') center/cover no-repeat;
+    filter: blur(3px) saturate(1.05);
+  }
+  .scrim {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(100deg, rgba(28,20,12,.86) 0%, rgba(28,20,12,.62) 46%, rgba(28,20,12,.18) 100%);
+  }
+
+  .content {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; gap: 44px;
+    padding: 0 76px;
+  }
+
+  .icon {
+    width: 148px; height: 148px; flex: none;
+    border-radius: 34px;
+    box-shadow: 0 18px 44px rgba(0,0,0,.45);
+  }
+
+  .type { display: flex; flex-direction: column; gap: 14px; }
+
+  .wordmark {
+    font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+    font-size: 92px; line-height: .95; letter-spacing: -1.5px;
+    color: #fff;
+    text-shadow: 0 3px 22px rgba(0,0,0,.42);
+  }
+
+  .tagline {
+    font-family: 'Manrope', system-ui, sans-serif; font-weight: 400;
+    font-size: 30px; line-height: 1.32; letter-spacing: .1px;
+    color: rgba(255,255,255,.93);
+    max-width: 560px;
+    text-shadow: 0 2px 14px rgba(0,0,0,.5);
+  }
+</style>
+
+<div class="stage">
+  <div class="bg"></div>
+  <div class="scrim"></div>
+  <div class="content">
+    <img class="icon" src="../../assets/icon.png" alt="">
+    <div class="type">
+      <div class="wordmark">Rumi</div>
+      <div class="tagline">Your private voice AI life coach.<br>Talk it through, think clearly, act.</div>
+    </div>
+  </div>
+</div>

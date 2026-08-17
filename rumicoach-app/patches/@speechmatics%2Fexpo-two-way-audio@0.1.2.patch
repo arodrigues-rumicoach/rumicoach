@@ -1,0 +1,131 @@
+diff --git a/android/src/main/java/expo/modules/twowayaudio/AudioEngine.kt b/android/src/main/java/expo/modules/twowayaudio/AudioEngine.kt
+index 0103151ab5ebfa36909c352d0d228f67feda6069..323b53b589d06c6b1de382bf9330f15fe5b35b5a 100644
+--- a/android/src/main/java/expo/modules/twowayaudio/AudioEngine.kt
++++ b/android/src/main/java/expo/modules/twowayaudio/AudioEngine.kt
+@@ -258,6 +258,21 @@ class AudioEngine (context: Context) {
+         }
+     }
+ 
++    fun stopPlayback() {
++        audioSampleQueue.clear()
++        if (::audioTrack.isInitialized) {
++            try {
++                audioTrack.pause()
++                audioTrack.flush()
++                audioTrack.play()
++            } catch (e: Exception) {
++                Log.e("AudioEngine", "Error stopping playback audioTrack", e)
++            }
++        }
++        isPlaying = false
++        onOutputVolumeCallback?.invoke(0.0F)
++    }
++
+     private fun playAudioFromSampleQueue() {
+         executorServicePlayback.execute{
+             isPlaying = true
+diff --git a/android/src/main/java/expo/modules/twowayaudio/ExpoTwoWayAudioModule.kt b/android/src/main/java/expo/modules/twowayaudio/ExpoTwoWayAudioModule.kt
+index 303873ecf088246f5e4f5cfd6f102594d24e49bd..9511877bb0f000b58927015f96d6184c47121dd0 100644
+--- a/android/src/main/java/expo/modules/twowayaudio/ExpoTwoWayAudioModule.kt
++++ b/android/src/main/java/expo/modules/twowayaudio/ExpoTwoWayAudioModule.kt
+@@ -62,6 +62,10 @@ class ExpoTwoWayAudioModule : Module() {
+              audioEngine?.playPCMData(data)
+          }
+ 
++         Function("stopPlayback") {
++             audioEngine?.stopPlayback()
++         }
++
+          Function("bypassVoiceProcessing") { bypass: Boolean ->
+              audioEngine?.bypassVoiceProcessing(bypass)
+          }
+diff --git a/ios/AudioEngine.swift b/ios/AudioEngine.swift
+index 46d6b22cdc8932cdf76ac73e1399ebce459235b0..808a191f5914213783b9987629b08b259fcef0f7 100644
+--- a/ios/AudioEngine.swift
++++ b/ios/AudioEngine.swift
+@@ -26,7 +26,7 @@ class AudioEngine {
+     
+     private var hasFirstInputBeenDiscarded = false
+     private var discardRecording = false
+-    private var discardFirstInputMillis = 2000
++    private var discardFirstInputMillis = 100
+     
+     enum AudioEngineError: Error {
+         case audioFormatError
+@@ -276,6 +276,12 @@ class AudioEngine {
+         speechPlayer.play()
+     }
+     
++    func stopPlayback() {
++        speechPlayer.stop()
++        outputBuffer = [Float](repeating: 0, count: 2048)
++        updateOutputVolume()
++    }
++
+     func tearDown() {
+         stopRecordingAndPlayer()
+         avAudioEngine.stop()
+diff --git a/ios/ExpoTwoWayAudioModule.swift b/ios/ExpoTwoWayAudioModule.swift
+index 16343695faa07368b5297e5a62f6a6c314fb0731..a0bf31b766a0072a31171b970574288b2982e5ad 100644
+--- a/ios/ExpoTwoWayAudioModule.swift
++++ b/ios/ExpoTwoWayAudioModule.swift
+@@ -110,6 +110,10 @@ public class ExpoTwoWayAudioModule: Module {
+             self.audioEngine?.playPCMData(pcmData)
+         }
+ 
++        Function("stopPlayback") {
++            self.audioEngine?.stopPlayback()
++        }
++
+         Function("bypassVoiceProcessing") { (bypass: Bool) in
+             self.audioEngine?.bypassVoiceProcessing(bypass)
+         }
+@@ -122,7 +126,7 @@ public class ExpoTwoWayAudioModule: Module {
+             EXPermissionsMethodsDelegate.getPermissionWithPermissionsManager(
+                 self.appContext?.permissions,
+                 withRequester: MicrophonePermissionRequester.self,
+-                resolve: promise.resolver,
++                resolve: { result in promise.resolve(result) },
+                 reject: promise.legacyRejecter
+             )
+         }
+@@ -131,7 +135,7 @@ public class ExpoTwoWayAudioModule: Module {
+             EXPermissionsMethodsDelegate.askForPermission(
+                 withPermissionsManager: self.appContext?.permissions,
+                 withRequester: MicrophonePermissionRequester.self,
+-                resolve: promise.resolver,
++                resolve: { result in promise.resolve(result) },
+                 reject: promise.legacyRejecter
+             )
+         }
+diff --git a/ios/MicrophonePermissionRequester.swift b/ios/MicrophonePermissionRequester.swift
+index fb81f461c191c27dca30ed8a106c01e3cdeb830f..6f7030dbd5c2b878ab1723ab6563c94d58e2a5e3 100644
+--- a/ios/MicrophonePermissionRequester.swift
++++ b/ios/MicrophonePermissionRequester.swift
+@@ -15,10 +15,7 @@ class MicrophonePermissionRequester: NSObject, EXPermissionsRequester {
+     var status: EXPermissionStatus
+ 
+     guard (Bundle.main.infoDictionary?["NSMicrophoneUsageDescription"]) != nil else {
+-      EXFatal(EXErrorWithMessage("""
+-        This app is missing NSMicrophoneUsageDescription, so audio services will fail.
+-        Add one of these keys to your bundle's Info.plist.
+-      """))
++      fatalError("This app is missing NSMicrophoneUsageDescription, so audio services will fail. Add one of these keys to your bundle's Info.plist.")
+       return ["status": EXPermissionStatusDenied]
+     }
+ 
+diff --git a/src/core.ts b/src/core.ts
+index 2ab05d5b02a9676245b7667d652a5e5fea626230..03c5d5e83a7264297cdbd5b8a8bb8816fb57f7e0 100644
+--- a/src/core.ts
++++ b/src/core.ts
+@@ -9,6 +9,10 @@ export function playPCMData(audioData: Uint8Array) {
+   return ExpoTwoWayAudioModule.playPCMData(audioData);
+ }
+ 
++export function stopPlayback() {
++  return ExpoTwoWayAudioModule.stopPlayback();
++}
++
+ export function bypassVoiceProcessing(bypass: boolean) {
+   return ExpoTwoWayAudioModule.bypassVoiceProcessing(bypass);
+ }

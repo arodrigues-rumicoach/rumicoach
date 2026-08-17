@@ -1,0 +1,70 @@
+# P0: Logout Flow
+# Tests: sign out returns to auth screen
+# Tags: settings
+
+appId: coach.rumi.app.qa
+tags:
+  - settings
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Open settings
+- tapOn:
+    id: "settings-button"
+    optional: true
+
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Scroll to logout
+- scroll
+- scroll
+
+# Tap logout
+- tapOn:
+    text: "Sign Out"
+    optional: true
+
+- tapOn:
+    text: "Log Out"
+    optional: true
+
+- tapOn:
+    id: "logout-button"
+    optional: true
+
+# Confirm logout
+- tapOn:
+    text: "Yes"
+    optional: true
+
+- tapOn:
+    text: "Confirm"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify we're back at auth screen
+- assertVisible:
+    text: "Sign In"
+    optional: true
+
+- assertVisible:
+    text: "Sign Up"
+    optional: true

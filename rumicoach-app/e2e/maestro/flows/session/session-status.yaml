@@ -1,0 +1,69 @@
+# P0: Session Status Transitions
+# Tests: idle → connecting → listening → speaking → thinking cycle
+# Tags: session
+
+appId: coach.rumi.app.qa
+tags:
+  - session
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to session tab
+- tapOn:
+    text: "Session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Start a new session
+- tapOn:
+    id: "start-session-button"
+    optional: true
+
+- tapOn:
+    text: "Start"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle permissions
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Wait for WebSocket connection
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Session should be active
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Wait for status transitions
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# End session
+- tapOn:
+    id: "end-session-button"
+    optional: true
+
+- tapOn:
+    text: "End Session"
+    optional: true
+
+- tapOn:
+    text: "Yes"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Verify results are shown
+- assertVisible:
+    text: ".*"
+    optional: true

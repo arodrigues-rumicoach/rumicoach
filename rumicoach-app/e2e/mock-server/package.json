@@ -1,0 +1,16 @@
+{
+  "name": "rumicoach-e2e-mock-server",
+  "version": "1.0.0",
+  "description": "Mock API server for RumiCoach E2E testing",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "bun server.js",
+    "dev": "bun --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "ws": "^8.18.0",
+    "uuid": "^10.0.0"
+  }
+}

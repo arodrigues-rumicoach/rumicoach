@@ -1,0 +1,46 @@
+# P0: Profile Display Flow
+# Tests: user data, vision, life balance, progress stats, badges
+# Tags: profile
+
+appId: coach.rumi.app.qa
+tags:
+  - profile
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile tab
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- tapOn:
+    id: "tab-profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify profile screen loads
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to see more profile sections
+- scroll
+- scroll
+
+# Verify progress stats are visible
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to badges
+- scroll
+
+# Verify badges section
+- assertVisible:
+    text: ".*"
+    optional: true

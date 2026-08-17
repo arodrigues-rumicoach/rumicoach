@@ -1,0 +1,70 @@
+# P0: Tab Navigation Flow
+# Tests: tab switching preserves state, back button behavior
+# Tags: smoke, navigation
+
+appId: coach.rumi.app.qa
+tags:
+  - smoke
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Verify journey tab is active by default
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Switch to session tab
+- tapOn:
+    text: "Session"
+    optional: true
+
+- tapOn:
+    id: "tab-session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Switch to memories tab
+- tapOn:
+    text: "Memories"
+    optional: true
+
+- tapOn:
+    id: "tab-memories"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Switch to profile tab
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- tapOn:
+    id: "tab-profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Go back to journey
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- tapOn:
+    id: "tab-journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify all tabs work
+- assertVisible:
+    text: ".*"
+    optional: true

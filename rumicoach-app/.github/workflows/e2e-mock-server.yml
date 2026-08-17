@@ -1,0 +1,45 @@
+name: E2E Mock Server Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  mock-server-tests:
+    name: Mock Server Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install mock server dependencies
+        working-directory: e2e/mock-server
+        run: bun install
+
+      - name: Start mock server
+        run: |
+          cd e2e/mock-server
+          bun server.js &
+          sleep 3
+          curl -sf http://localhost:3001/v1/nonexistent || exit 1
+
+      - name: Run HTTP route tests
+        working-directory: e2e/mock-server
+        run: bash test-routes.sh
+
+      - name: Run WebSocket tests
+        working-directory: e2e/mock-server
+        run: bun test-websocket.js
+
+      - name: Stop mock server
+        if: always()
+        run: pkill -f "bun server.js" || true

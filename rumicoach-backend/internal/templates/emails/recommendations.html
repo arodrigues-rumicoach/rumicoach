@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Subject }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Mobile overrides */
+        @media screen and (max-width: 720px) {
+            .email-container {
+                width: 100% !important;
+                margin-top: 0 !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+            .email-content {
+                padding: 30px 20px !important;
+            }
+        }
+    </style>
+</head>
+<body style="font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F5F5F0; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #F5F5F0; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Card Container -->
+                <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="680" style="background-color: #FFFFFF; border-radius: 16px; border: 1px solid rgba(44, 51, 51, 0.08); box-shadow: 0 4px 20px rgba(44, 51, 51, 0.02); overflow: hidden; margin: 0 auto;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 40px 20px 40px; border-bottom: 1px solid rgba(44, 51, 51, 0.05);">
+                            <a href="{{ .LoginURL }}" style="text-decoration: none; display: inline-block;">
+                                <img src="https://cdn.rumi.coach/assets/logos/logo_horizontal.png" alt="Rumi.coach Logo" style="height: 36px; border: 0; display: block;" height="36" />
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="email-content" style="padding: 40px 40px 30px 40px; color: #2C3333; font-size: 16px; line-height: 1.625;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2C3333; margin: 0 0 16px 0; font-family: Georgia, Cambria, serif; letter-spacing: -0.01em;">{{ .Greeting }}</p>
+                            
+                            <p style="margin: 0 0 30px 0; color: #4A5252;">{{ .Intro }}</p>
+                            
+                            <!-- Recommendations List -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td>
+                                        {{ range .Recommendations }}
+                                        <div style="background-color: #FAF9F6; border: 1px solid rgba(44, 51, 51, 0.06); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                                <tr>
+                                                    <td>
+                                                        <span style="display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background-color: #E2ECE9; color: #1A5F4F; padding: 4px 10px; border-radius: 20px; margin-bottom: 12px; font-family: 'Manrope', sans-serif;">
+                                                            {{ .TypeIcon }} {{ .Type }}
+                                                        </span>
+                                                        <h3 style="margin: 0 0 6px 0; font-family: Georgia, serif; font-size: 18px; color: #2C3333; font-weight: bold; line-height: 1.3;">{{ .Title }}</h3>
+                                                        {{ if .Author }}
+                                                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #7E8C8C; font-style: italic;">{{ .Author }}</p>
+                                                        {{ end }}
+                                                        <p style="margin: 0 0 16px 0; color: #4A5252; font-size: 15px; line-height: 1.5;">{{ .Description }}</p>
+                                                        {{ if .URL }}
+                                                        <a href="{{ .URL }}" target="_blank" style="display: inline-block; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 700; color: #1A5F4F; text-decoration: none; border-bottom: 2px solid #1A5F4F; padding-bottom: 2px;">
+                                                            {{ if eq $.Locale "pt-PT" }}Explorar Recurso{{ else if eq $.Locale "pt-BR" }}Explorar Recurso{{ else }}Explore Resource{{ end }} &rarr;
+                                                        </a>
+                                                        {{ end }}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        {{ end }}
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0 0; color: #2C3333; font-size: 15px; border-top: 1px solid rgba(44, 51, 51, 0.05); padding-top: 24px;">
+                                {{ .Closing }}<br>
+                                <strong style="color: #1A5F4F; font-size: 15px;">{{ .Team }}</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="background-color: #F9F9F6; padding: 30px 40px; border-top: 1px solid rgba(44, 51, 51, 0.05); color: #5A6767; font-size: 13px; line-height: 1.5;">
+                            <p style="margin: 0 0 8px 0; font-weight: 600;">{{ .Copyright }}</p>
+                            <p style="margin: 0; color: #7E8C8C;">{{ .FooterText }}</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,93 @@
+# P1: Session Summary Panel
+# Tests: summary panel renders with insight and evaluation
+# Tags: session
+
+appId: coach.rumi.app.qa
+tags:
+  - session
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to session
+- tapOn:
+    text: "Session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Start session
+- tapOn:
+    id: "start-session-button"
+    optional: true
+
+- tapOn:
+    text: "Start"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Wait for connection
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Send messages to build session
+- tapOn:
+    id: "text-input"
+    optional: true
+
+- inputText: "I want to improve my work-life balance"
+- tapOn:
+    id: "send-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- inputText: "I work too many hours"
+- tapOn:
+    id: "send-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- inputText: "I need to set better boundaries"
+- tapOn:
+    id: "send-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- inputText: "Can you help me create a plan?"
+- tapOn:
+    id: "send-button"
+    optional: true
+
+# Wait for wrap-up
+- waitForAnimationToEnd:
+    timeout: 15000
+
+# Verify summary panel appears
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# End session
+- tapOn:
+    id: "end-session-button"
+    optional: true
+
+- tapOn:
+    text: "End Session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 10000

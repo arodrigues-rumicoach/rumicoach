@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Subject }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Mobile overrides */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin-top: 0 !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+            .email-content {
+                padding: 30px 20px !important;
+            }
+            .code-box {
+                font-size: 28px !important;
+                letter-spacing: 8px !important;
+            }
+        }
+    </style>
+</head>
+<body style="font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F5F5F0; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #F5F5F0; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Card Container -->
+                <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="560" style="background-color: #FFFFFF; border-radius: 16px; border: 1px solid rgba(44, 51, 51, 0.08); box-shadow: 0 4px 20px rgba(44, 51, 51, 0.02); overflow: hidden; margin: 0 auto;">
+
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 40px 20px 40px; border-bottom: 1px solid rgba(44, 51, 51, 0.05);">
+                            <a href="{{ .FrontendURL }}" style="text-decoration: none; display: inline-block;">
+                                <img src="https://cdn.rumi.coach/assets/logos/logo_horizontal.png" alt="Rumi.coach Logo" style="height: 36px; border: 0; display: block;" height="36" />
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td class="email-content" align="center" style="padding: 40px 40px 30px 40px; color: #2C3333; font-size: 16px; line-height: 1.625;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2C3333; margin: 0 0 16px 0; font-family: Georgia, Cambria, serif; letter-spacing: -0.01em;">{{ .Title }}</p>
+
+                            <p style="margin: 0 0 28px 0; color: #4A5252;">{{ .Instruction }}</p>
+
+                            <!-- Code Box -->
+                            <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto 28px auto;">
+                                <tr>
+                                    <td align="center" class="code-box" style="background-color: #F0F5F3; border: 1px solid rgba(26, 95, 79, 0.15); border-radius: 12px; padding: 20px 36px; font-family: 'SF Mono', 'Menlo', 'Consolas', monospace; font-size: 34px; font-weight: 700; letter-spacing: 12px; color: #1A5F4F; text-indent: 12px;">{{ .Code }}</td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 0 0 8px 0; color: #4A5252; font-size: 14px;">{{ .Expiry }}</p>
+                            <p style="margin: 0; color: #7E8C8C; font-size: 13px;">{{ .Ignore }}</p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="background-color: #F9F9F6; padding: 30px 40px; border-top: 1px solid rgba(44, 51, 51, 0.05); color: #5A6767; font-size: 13px; line-height: 1.5;">
+                            <p style="margin: 0 0 8px 0; font-weight: 600;">{{ .Copyright }}</p>
+                            <p style="margin: 0; color: #7E8C8C;">{{ .FooterText }}</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

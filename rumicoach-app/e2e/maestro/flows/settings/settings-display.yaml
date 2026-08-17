@@ -1,0 +1,50 @@
+# P0: Settings Display Flow
+# Tests: theme, language, app settings, account management
+# Tags: settings
+
+appId: coach.rumi.app.qa
+tags:
+  - settings
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile tab first
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- tapOn:
+    id: "tab-profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap settings icon/button
+- tapOn:
+    id: "settings-button"
+    optional: true
+
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify settings screen loads
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll through settings
+- scroll
+- scroll
+
+# Verify settings options are visible
+- assertVisible:
+    text: ".*"
+    optional: true

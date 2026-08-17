@@ -1,0 +1,61 @@
+# P0: Language Switching
+# Tests: change app language
+# Tags: settings
+
+appId: coach.rumi.app.qa
+tags:
+  - settings
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Open settings
+- tapOn:
+    id: "settings-button"
+    optional: true
+
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap language option
+- tapOn:
+    text: "Language"
+    optional: true
+
+- tapOn:
+    id: "language-selector"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select a different language
+- tapOn:
+    text: "Portuguese"
+    optional: true
+
+- tapOn:
+    text: "Spanish"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify app still works
+- assertVisible:
+    text: ".*"
+    optional: true

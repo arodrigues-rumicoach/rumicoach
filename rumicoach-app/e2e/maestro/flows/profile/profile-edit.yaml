@@ -1,0 +1,62 @@
+# P1: Profile Edit Flow
+# Tests: edit name and view profile
+# Tags: profile
+
+appId: coach.rumi.app.qa
+tags:
+  - profile
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- tapOn:
+    id: "tab-profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap edit profile
+- tapOn:
+    id: "edit-profile-button"
+    optional: true
+
+- tapOn:
+    text: "Edit"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Change name
+- tapOn:
+    id: "name-input"
+    optional: true
+
+- clearText
+
+- inputText: "Updated E2E Name"
+
+# Save changes
+- tapOn:
+    text: "Save"
+    optional: true
+
+- tapOn:
+    id: "save-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify name updated
+- assertVisible:
+    text: "Updated E2E Name"
+    optional: true

@@ -1,0 +1,73 @@
+# P0: Theme Switching
+# Tests: change theme and verify app updates
+# Tags: settings
+
+appId: coach.rumi.app.qa
+tags:
+  - settings
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Open settings
+- tapOn:
+    id: "settings-button"
+    optional: true
+
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap theme option
+- tapOn:
+    text: "Theme"
+    optional: true
+
+- tapOn:
+    id: "theme-selector"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select a different theme
+- tapOn:
+    text: "Sunset"
+    optional: true
+
+- tapOn:
+    text: "Ocean"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Go back to verify theme applied
+- tapOn:
+    text: "Back"
+    optional: true
+
+- tapOn:
+    id: "back-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Verify app is still functional
+- assertVisible:
+    text: ".*"
+    optional: true

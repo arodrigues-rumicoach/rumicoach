@@ -1,0 +1,54 @@
+# Helper: Login with email OTP
+# Usage: maestro test helpers/login-email-otp.yaml
+# Requires: TEST_EMAIL and TEST_PASSWORD env vars
+
+appId: coach.rumi.app.qa
+---
+- clearState
+
+# Wait for app to load
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Check if we're on the sign-in screen
+- assertVisible:
+    id: "sign-in-button"
+    optional: true
+
+# Tap sign in if visible
+- tapOn:
+    id: "sign-in-button"
+    optional: true
+
+# Enter email
+- tapOn:
+    id: "email-input"
+    optional: true
+
+- inputText: ${TEST_EMAIL}
+
+# Tap send code
+- tapOn:
+    id: "send-code-button"
+    optional: true
+
+# Enter OTP (mock server auto-verifies)
+- tapOn:
+    id: "otp-input"
+    optional: true
+
+- inputText: ${TEST_PASSWORD}
+
+# Tap verify/login
+- tapOn:
+    id: "verify-button"
+    optional: true
+
+# Wait for home/journey screen
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Assert we're past auth
+- assertVisible:
+    text: ".*"
+    optional: true

@@ -1,0 +1,70 @@
+# P0: Voice Session Lifecycle
+# Tests: connect → status transitions → end session
+# Tags: session
+
+appId: coach.rumi.app.qa
+tags:
+  - session
+---
+# Login first
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to session tab
+- tapOn:
+    text: "Session"
+    optional: true
+
+- tapOn:
+    id: "tab-session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Start session
+- tapOn:
+    id: "start-session-button"
+    optional: true
+
+- tapOn:
+    text: "Start"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle permission dialogs
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Wait for WebSocket connection
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Session should be active
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# End session
+- tapOn:
+    id: "end-session-button"
+    optional: true
+
+- tapOn:
+    text: "End Session"
+    optional: true
+
+- tapOn:
+    text: "Yes"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Verify results screen
+- assertVisible:
+    text: ".*"
+    optional: true

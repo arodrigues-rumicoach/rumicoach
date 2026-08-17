@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Subject }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Mobile overrides */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin-top: 0 !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+            .email-content {
+                padding: 30px 20px !important;
+            }
+            .email-button {
+                display: block !important;
+                text-align: center !important;
+                padding: 14px 20px !important;
+            }
+        }
+    </style>
+</head>
+<body style="font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F5F5F0; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #F5F5F0; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <!-- Card Container -->
+                <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="560" style="background-color: #FFFFFF; border-radius: 16px; border: 1px solid rgba(44, 51, 51, 0.08); box-shadow: 0 4px 20px rgba(44, 51, 51, 0.02); overflow: hidden; margin: 0 auto;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 40px 40px 20px 40px; border-bottom: 1px solid rgba(44, 51, 51, 0.05);">
+                            <a href="{{ .LoginURL }}" style="text-decoration: none; display: inline-block;">
+                                <img src="https://cdn.rumi.coach/assets/logos/logo_horizontal.png" alt="Rumi.coach Logo" style="height: 36px; border: 0; display: block;" height="36" />
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    <!-- Content -->
+                    <tr>
+                        <td class="email-content" style="padding: 40px 40px 30px 40px; color: #2C3333; font-size: 16px; line-height: 1.625;">
+                            <p style="font-size: 20px; font-weight: 700; color: #2C3333; margin: 0 0 20px 0; font-family: Georgia, Cambria, serif; letter-spacing: -0.01em;">{{ .Greeting }}</p>
+                            
+                            <p style="margin: 0 0 20px 0; color: #4A5252;">{{ .BodyText1 }}</p>
+                            
+                            <p style="margin: 0 0 20px 0; color: #4A5252;">{{ .BodyText2 }}</p>
+                            
+                            <p style="margin: 0 0 24px 0; color: #4A5252;">{{ .BodyText3 }}</p>
+                            
+                            <!-- CTA Button -->
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ .LoginURL }}" class="email-button" style="background-color: #1A5F4F; color: #FFFFFF; font-weight: 700; font-size: 15px; text-decoration: none; padding: 14px 32px; border-radius: 10px; display: inline-block; transition: background-color 0.25s; box-shadow: 0 4px 12px rgba(26, 95, 79, 0.15); border: 1px solid #13473B; letter-spacing: -0.01em;">{{ .CtaText }}</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            {{ if .BodyText4 }}
+                            <p style="margin: 0 0 24px 0; color: #4A5252;">{{ .BodyText4 }}</p>
+                            {{ end }}
+                            
+                            <p style="margin: 30px 0 0 0; color: #2C3333; font-size: 15px; border-top: 1px solid rgba(44, 51, 51, 0.05); padding-top: 24px;">
+                                {{ .Closing }}<br>
+                                <strong style="color: #1A5F4F; font-size: 15px;">{{ .Team }}</strong>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="background-color: #F9F9F6; padding: 30px 40px; border-top: 1px solid rgba(44, 51, 51, 0.05); color: #5A6767; font-size: 13px; line-height: 1.5;">
+                            <p style="margin: 0 0 8px 0; font-weight: 600;">{{ .Copyright }}</p>
+                            <p style="margin: 0; color: #7E8C8C;">{{ .FooterText }}</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

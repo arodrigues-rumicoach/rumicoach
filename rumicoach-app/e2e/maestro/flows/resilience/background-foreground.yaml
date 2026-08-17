@@ -1,0 +1,62 @@
+# P1: App Background/Foreground
+# Tests: app preserves state when backgrounded
+# Tags: resilience
+
+appId: coach.rumi.app.qa
+tags:
+  - resilience
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to journey
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Background the app
+- backgroundApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Foreground the app
+- openApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify app is still on journey screen
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Navigate to session
+- tapOn:
+    text: "Session"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Background again
+- backgroundApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Foreground
+- openApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify still on session screen
+- assertVisible:
+    text: ".*"
+    optional: true

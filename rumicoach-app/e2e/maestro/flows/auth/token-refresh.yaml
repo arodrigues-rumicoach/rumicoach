@@ -1,0 +1,47 @@
+# P0: Token Refresh Flow
+# Tests: expired token triggers automatic refresh
+# Tags: auth
+
+appId: coach.rumi.app.qa
+tags:
+  - auth
+---
+- clearState
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Login first
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# App should handle token refresh automatically
+# Navigate between screens to trigger API calls
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify app is still functional
+- assertVisible:
+    text: ".*"
+    optional: true

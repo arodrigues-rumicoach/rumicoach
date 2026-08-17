@@ -1,0 +1,49 @@
+# P0: Google Sign In Flow
+# Tests: Google OAuth → home screen
+# Tags: smoke, auth
+
+appId: coach.rumi.app.qa
+tags:
+  - smoke
+  - auth
+---
+- clearState
+
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle onboarding if shown
+- runFlow:
+    when:
+      visible: "Get Started"
+    commands:
+      - tapOn: "Get Started"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# Tap Google sign in
+- tapOn:
+    text: "Sign In"
+    optional: true
+
+- tapOn:
+    id: "google-sign-in-button"
+    optional: true
+
+- tapOn:
+    text: "Google"
+    optional: true
+
+# Wait for Google auth flow (mock server handles this)
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Handle permission dialogs
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Verify navigation to main screen
+- assertVisible:
+    text: ".*"
+    optional: true

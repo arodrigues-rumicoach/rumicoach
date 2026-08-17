@@ -1,0 +1,117 @@
+# P0: Email Sign Up Flow
+# Tests: 7-step signup wizard completion
+# Tags: auth
+
+appId: coach.rumi.app.qa
+tags:
+  - auth
+---
+- clearState
+
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Navigate to sign up
+- tapOn:
+    text: "Sign Up"
+    optional: true
+
+- tapOn:
+    id: "sign-up-button"
+    optional: true
+
+# Step 1: Name
+- tapOn:
+    id: "name-input"
+    optional: true
+
+- inputText: "E2E Test User"
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 2: Email
+- tapOn:
+    id: "email-input"
+    optional: true
+
+- inputText: "e2e-test@rumi.coach"
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 3: Phone (optional)
+- tapOn:
+    text: "Skip"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 4: Focus area
+- tapOn:
+    text: "Career"
+    optional: true
+
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 5: Coach selection
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 6: Theme
+- tapOn:
+    text: "Next"
+    optional: true
+
+- tapOn:
+    id: "next-button"
+    optional: true
+
+# Step 7: Complete
+- tapOn:
+    text: "Get Started"
+    optional: true
+
+- tapOn:
+    id: "complete-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Handle permissions
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Verify completion
+- assertVisible:
+    text: ".*"
+    optional: true

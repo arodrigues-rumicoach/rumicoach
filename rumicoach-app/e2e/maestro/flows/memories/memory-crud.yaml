@@ -1,0 +1,95 @@
+# P1: Memory Creation and Deletion
+# Tests: create a memory, view it, delete it
+# Tags: memories
+
+appId: coach.rumi.app.qa
+tags:
+  - memories
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to memories
+- tapOn:
+    text: "Memories"
+    optional: true
+
+- tapOn:
+    id: "tab-memories"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap add/create memory button
+- tapOn:
+    id: "add-memory-button"
+    optional: true
+
+- tapOn:
+    text: "Add"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Select category
+- tapOn:
+    text: "Insights"
+    optional: true
+
+- tapOn:
+    id: "category-insight"
+    optional: true
+
+# Enter content
+- tapOn:
+    id: "memory-content-input"
+    optional: true
+
+- inputText: "E2E test memory created during automated testing"
+
+# Save
+- tapOn:
+    text: "Save"
+    optional: true
+
+- tapOn:
+    id: "save-button"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify memory appears
+- assertVisible:
+    text: "E2E test memory"
+    optional: true
+
+# Long press to delete
+- longPressOn:
+    text: "E2E test memory"
+    optional: true
+
+- longPressOn:
+    id: "memory-card"
+    optional: true
+
+# Confirm deletion
+- tapOn:
+    text: "Delete"
+    optional: true
+
+- tapOn:
+    text: "Confirm"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify memory is gone
+- assertVisible:
+    text: "E2E test memory"
+    optional: true

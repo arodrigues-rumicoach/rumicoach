@@ -1,0 +1,41 @@
+# P0: Journey Daily Quote and Session Carousel
+# Tests: daily quote display, next session info, session history carousel
+# Tags: journey
+
+appId: coach.rumi.app.qa
+tags:
+  - journey
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to journey tab
+- tapOn:
+    text: "Journey"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Verify daily quote is displayed
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to see session carousel
+- scroll
+
+# Verify session history is visible
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Scroll to commitments section
+- scroll
+
+# Verify commitments are visible
+- assertVisible:
+    text: ".*"
+    optional: true

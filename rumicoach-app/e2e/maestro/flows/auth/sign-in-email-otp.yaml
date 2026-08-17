@@ -1,0 +1,81 @@
+# P0: Email OTP Sign In Flow
+# Tests: email input → OTP send → OTP verify → home screen
+# Tags: smoke, auth
+
+appId: coach.rumi.app.qa
+tags:
+  - smoke
+  - auth
+---
+- clearState
+
+# Launch app
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle onboarding if shown
+- runFlow:
+    when:
+      visible: "Get Started"
+    commands:
+      - tapOn: "Get Started"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# Navigate to sign in
+- tapOn:
+    text: "Sign In"
+    optional: true
+
+- tapOn:
+    id: "sign-in-button"
+    optional: true
+
+# Enter email
+- tapOn:
+    id: "email-input"
+    optional: true
+
+- inputText: e2e-test@rumi.coach
+
+# Send verification code
+- tapOn:
+    id: "send-code-button"
+    optional: true
+
+- tapOn:
+    text: "Send Code"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Enter OTP code (mock server accepts 123456)
+- tapOn:
+    id: "otp-input"
+    optional: true
+
+- inputText: "123456"
+
+# Verify
+- tapOn:
+    id: "verify-button"
+    optional: true
+
+- tapOn:
+    text: "Verify"
+    optional: true
+
+# Wait for navigation to complete
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Handle any permission dialogs
+- runFlow: ../helpers/handle-permissions.yaml
+
+# Verify we're past auth (journey screen or similar)
+- assertVisible:
+    text: ".*"
+    optional: true

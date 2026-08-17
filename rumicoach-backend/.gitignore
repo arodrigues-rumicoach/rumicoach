@@ -1,0 +1,64 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/bin/
+/dist/
+
+# Go vendor directory (if not using vendor mode)
+vendor/
+
+voice_samples/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Log files
+*.log
+
+# JetBrains IDE
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# GCP service account key files (never commit these)
+gcp-key.json
+*.json.key
+
+# Cloud SQL proxy binary
+db_proxy/
+cloud-sql-proxy
+
+# Test output
+TEST*.xml
+coverage.out
+coverage.html
+
+# Temporary files
+tmp/
+scratch/
+
+# Node (if any tooling)
+node_modules/
+
+# Large media files
+*.mp4
+*.tiff
+*.avi
+*.flv
+*.mov
+*.wmv
+
+# Google service-account keys — never commit credentials
+*firebase-adminsdk*.json
+*service-account*.json

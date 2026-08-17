@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Label }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+                margin-top: 0 !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+            }
+            .email-content {
+                padding: 30px 20px !important;
+            }
+        }
+    </style>
+</head>
+<body style="font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F5F5F0; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #F5F5F0; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table class="email-container" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #FFFFFF; border-radius: 16px; border: 1px solid rgba(44, 51, 51, 0.08); box-shadow: 0 4px 20px rgba(44, 51, 51, 0.02); overflow: hidden; margin: 0 auto;">
+
+                    <!-- Header: the category is the first thing to read, since it decides who acts -->
+                    <tr>
+                        <td style="padding: 28px 40px 20px 40px; border-bottom: 1px solid rgba(44, 51, 51, 0.05);">
+                            <span style="display: inline-block; background-color: {{ .LabelColor }}; color: #FFFFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 12px; border-radius: 6px;">{{ .Label }}</span>
+                        </td>
+                    </tr>
+
+                    <!-- What the user actually wrote. Their words come first and get the room. -->
+                    <tr>
+                        <td class="email-content" style="padding: 32px 40px 8px 40px; color: #2C3333; font-size: 16px; line-height: 1.7;">
+                            <div style="white-space: pre-wrap; word-break: break-word;">{{ .Description }}</div>
+                        </td>
+                    </tr>
+
+                    {{ if .Images }}
+                    <!-- Screenshots inline: a bug is usually obvious the moment you see it, and
+                         making somebody click through is the difference between triaged and ignored. -->
+                    <tr>
+                        <td style="padding: 24px 40px 8px 40px;">
+                            {{ range .Images }}
+                            <a href="{{ . }}" style="text-decoration: none; display: block; margin-bottom: 12px;">
+                                <img src="{{ . }}" alt="Screenshot" style="max-width: 100%; border: 1px solid rgba(44, 51, 51, 0.12); border-radius: 8px; display: block;" />
+                            </a>
+                            {{ end }}
+                            <p style="margin: 4px 0 0 0; color: #7E8C8C; font-size: 12px;">Screenshot links expire.</p>
+                        </td>
+                    </tr>
+                    {{ end }}
+
+                    <!-- Diagnostics, as a table so they can be read down the left edge -->
+                    <tr>
+                        <td style="padding: 24px 40px 32px 40px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: #F9F9F6; border-radius: 8px; padding: 4px 0;">
+                                {{ range .Context }}
+                                <tr>
+                                    <td style="padding: 8px 16px; color: #7E8C8C; font-size: 13px; white-space: nowrap; vertical-align: top; width: 1%;">{{ index . 0 }}</td>
+                                    <td style="padding: 8px 16px 8px 0; color: #2C3333; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all;">{{ index . 1 }}</td>
+                                </tr>
+                                {{ end }}
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="background-color: #F9F9F6; padding: 20px 40px; border-top: 1px solid rgba(44, 51, 51, 0.05); color: #7E8C8C; font-size: 12px;">
+                            Sent from the Rumi app
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

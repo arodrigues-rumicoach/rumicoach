@@ -1,0 +1,3164 @@
+openapi: 3.0.3
+info:
+  title: rumi.coach API
+  version: 1.0.0
+servers:
+  - url: /v1
+
+paths:
+  /leads:
+    post:
+      summary: Submit a new lead
+      tags:
+        - Leads
+      operationId: PostLeads
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeadRequest'
+      responses:
+        '201':
+          description: Lead created successfully
+        '400':
+          description: Bad request
+
+  /auth/verifications/request:
+    post:
+      summary: Request verification code (email or SMS)
+      tags:
+        - Auth
+      operationId: RequestVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationRequest'
+      responses:
+        '200':
+          description: Verification code sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          description: Bad request
+
+  /auth/verifications/verify:
+    post:
+      summary: Verify the requested code
+      description: >-
+        Verifies the code sent to the identifier. In the signup flow, an existing
+        account is only revealed here — after the caller proved ownership of the
+        mailbox/number by entering a valid code — as a 400 with error code
+        EMAIL_ALREADY_EXISTS or PHONE_ALREADY_EXISTS. An invalid code always
+        returns the generic INVALID_CODE, so account existence cannot be probed.
+      tags:
+        - Auth
+      operationId: VerifyCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationCheck'
+      responses:
+        '200':
+          description: Verificaton successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerificationResponse'
+        '400':
+          description: Invalid or expired code (INVALID_CODE), or — only after a valid code — the account already exists (EMAIL_ALREADY_EXISTS / PHONE_ALREADY_EXISTS)
+
+  /auth/verifications/sso:
+    post:
+      summary: Verify SSO Token (e.g. Google) and check user existence
+      tags:
+        - Auth
+      operationId: VerifySSO
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SSOVerificationRequest'
+      responses:
+        '200':
+          description: Verification successful (token is valid and account does not exist)
+        '400':
+          description: Invalid token, parameters, or account already exists
+
+  /auth/login/code:
+    post:
+      summary: Login via verification code
+      tags:
+        - Auth
+      operationId: LoginWithCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginWithCodeRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid code
+        '403':
+          description: Account inactive or not found
+
+  /auth/google:
+    post:
+      summary: Login via Google IdToken
+      tags:
+        - Auth
+      operationId: GoogleLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid Token
+
+  /auth/apple:
+    post:
+      summary: Login via Apple identity token (Sign in with Apple, iOS only)
+      tags:
+        - Auth
+      operationId: AppleLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppleLoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid Token
+        '403':
+          description: Account inactive or not found
+
+  /auth/refresh:
+    post:
+      summary: Refresh JWT Access Token
+      tags:
+        - Auth
+      operationId: RefreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+
+  /waitlist:
+    post:
+      summary: Join the waitlist
+      tags:
+        - Waitlist
+      operationId: JoinWaitlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistRequest'
+      responses:
+        '200':
+          description: Joined successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid validations
+
+  /auth/register:
+    post:
+      summary: Register a new active user account
+      tags:
+        - Auth
+      operationId: RegisterUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitlistRequest'
+      responses:
+        '200':
+          description: Registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          description: Invalid validations
+
+  /auth/me/link/apple:
+    post:
+      summary: Link a Sign in with Apple credential to the current account
+      description: >-
+        Attaches the Apple ID inside the identity token to the authenticated
+        account, so Apple sign-in works from then on whichever provider created it.
+        Required for "Hide My Email" users: their token carries a per-app private
+        relay address that can never match an account created another way, so
+        POST /auth/apple has nothing to match on.
+      tags:
+        - Auth
+      operationId: LinkAppleAccount
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkAppleRequest'
+      responses:
+        '200':
+          description: Linked (or already linked to this same Apple ID)
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Apple ID already linked to another account, or this account already has a different one
+        '401':
+          description: Unauthorized or invalid identity token
+
+  /auth/me/identifier:
+    put:
+      summary: Update email or phone number for current user
+      tags:
+        - Auth
+      operationId: UpdateIdentifier
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIdentifierRequest'
+      responses:
+        '200':
+          description: Updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid validations
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /me:
+    get:
+      summary: Get current authenticated user
+      tags:
+        - Users
+      operationId: GetCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+    patch:
+      summary: Update current user
+      tags:
+        - Users
+      operationId: UpdateCurrentUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+    delete:
+      summary: Delete current user (anonymize account)
+      tags:
+        - Users
+      operationId: DeleteCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Account anonymized successfully
+        '401':
+          description: Unauthorized
+
+  /me/profile:
+    get:
+      summary: Get user profile and progress statistics
+      tags:
+        - Users
+      operationId: GetMeProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        '401':
+          description: Unauthorized
+
+  /me/data:
+    get:
+      summary: Export all personal data for GDPR compliance
+      tags:
+        - Users
+      operationId: ExportCurrentUserData
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: A JSON export containing all user data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDataExport'
+        '401':
+          description: Unauthorized
+    delete:
+      summary: Delete user data, all of it or by category
+      description: >
+        Erases the user's data. Without `scope` the whole account's coaching data goes,
+        which is what callers written before this parameter expected. `scope` narrows it
+        to one or more categories so the user can, say, clear their chat without losing
+        their journey. Two things are never deleted by any scope: the minutes ledger
+        (`balance_transactions` and the balance itself — erasing data is not a refund),
+        and messaging integrations, since revoking one silently disconnects the user's
+        WhatsApp or Telegram. Only account deletion removes those.
+      tags:
+        - Users
+      operationId: DeleteCurrentUserData
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          description: >
+            Comma-separated categories to erase. Omit for `all`. `memories` drops saved
+            memories; `chat` drops the WhatsApp/Telegram conversation but keeps the
+            connection; `commitments` drops commitments and their habit plans;
+            `progress` drops session history, and with it the streak and the growth
+            journey; `all` covers everything. Combining `all` with others is the same
+            as `all`. An unrecognized value is rejected.
+          schema:
+            type: string
+            example: memories,chat
+      responses:
+        '204':
+          description: Data deleted successfully
+        '400':
+          description: Unknown scope value (INVALID_PAYLOAD)
+        '401':
+          description: Unauthorized
+
+  /me/data/export:
+    post:
+      summary: Email the user a copy of their data
+      description: >
+        Builds the same export as `GET /me/data` and emails it to the address on the
+        account as a JSON attachment, rather than returning it as a download. Answers 202
+        as soon as the request is accepted; the file arrives afterwards. A download is of
+        little use on mobile, where the browser has nowhere meaningful to put it.
+      tags:
+        - Users
+      operationId: RequestUserDataExport
+      security:
+        - BearerAuth: []
+      responses:
+        '202':
+          description: Export accepted; it will be emailed to the account's address
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+        '422':
+          description: The account has no email address to send the export to
+
+  /feedback:
+    post:
+      summary: Send feedback, a bug report, or a feature request
+      description: >
+        Stores the report and any attached screenshots, and notifies the team. Images are
+        base64-encoded in the body, capped at 3 per report and 5MB each after decoding, and
+        their format is sniffed from the bytes rather than taken from the client. An upload
+        that fails costs the screenshot, never the report itself.
+      tags:
+        - Users
+      operationId: SubmitFeedback
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '201':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '400':
+          description: Invalid category, empty description, or an unacceptable image
+        '401':
+          description: Unauthorized
+
+  /me/fcm-token:
+    post:
+      summary: Register a new device FCM token for push notifications
+      tags:
+        - Users
+      operationId: RegisterFCMToken
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FCMTokenRequest'
+      responses:
+        '204':
+          description: FCM token registered successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /me/transactions:
+    get:
+      summary: Get the user's balance transaction history (newest first)
+      description: >
+        The minutes bank's ledger, bank-statement style: signed credits and debits with
+        the balance after each row. With grouped=true, consecutive message_usage debits
+        falling on the same calendar day (X-Timezone header decides the day boundary,
+        default UTC) collapse into one row carrying their summed amount, the newest
+        row's id/balanceAfter/createdAt, plus day and messageCount. A run is broken by
+        any interleaved non-message row, so the running balance stays arithmetically
+        consistent between adjacent rows.
+      tags:
+        - Users
+      operationId: GetTransactions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: grouped
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Collapse same-day runs of message_usage debits into one row per run.
+      responses:
+        '200':
+          description: Paginated list of balance transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceTransactionPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /me/usage:
+    get:
+      summary: Get the user's usage history (billable sessions and companion messages, newest first)
+      deprecated: true
+      description: >
+        DEPRECATED: the app's Subscription & usage screen now renders the statement view
+        (GET /me/transactions?grouped=true) instead. Kept only for app versions already
+        in the field; delete the endpoint and internal/services/usage once the
+        statement-based release is the minimum supported app version.
+
+        Merged usage feed for the Subscription & usage screen. Session entries come from
+        the balance ledger's session rows — session_usage debits plus the zero-amount
+        session_free rows that mark the free opening pair, flagged `free: true` and shown
+        at their real duration. Message entries are companion-channel messages sent by
+        Rumi, grouped per calendar day (X-Timezone header decides the day boundary,
+        default UTC), each charged from the ledger's message_usage debits. This is usage,
+        not session history — no transcripts or summaries.
+      tags:
+        - Users
+      operationId: GetUsage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated usage history plus lifetime totals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageHistoryResponse'
+        '401':
+          description: Unauthorized
+
+  /me/integrations:
+    get:
+      summary: List the user's integrations (WhatsApp, ...)
+      tags:
+        - Integrations
+      operationId: GetIntegrations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of channel bindings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Integration'
+        '401':
+          description: Unauthorized
+
+  /me/integrations/whatsapp/link:
+    post:
+      summary: Start linking the user's WhatsApp number (returns a one-time code and wa.me link)
+      tags:
+        - Integrations
+      operationId: LinkWhatsAppIntegration
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Link code created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelLinkResponse'
+        '401':
+          description: Unauthorized
+        '503':
+          description: WhatsApp channel not available
+
+  /me/integrations/telegram/link:
+    post:
+      summary: Start linking the user's Telegram account (returns a one-time code and t.me link)
+      tags:
+        - Integrations
+      operationId: LinkTelegramIntegration
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Link code created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelLinkResponse'
+        '401':
+          description: Unauthorized
+        '503':
+          description: Telegram channel not available
+
+  /me/integrations/{integrationId}:
+    get:
+      summary: Get details of an integration by ID or provider name (e.g., whatsapp)
+      tags:
+        - Integrations
+      operationId: GetIntegration
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: integrationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Integration details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Channel binding not found
+    patch:
+      summary: Update an integration (e.g. reply mode)
+      tags:
+        - Integrations
+      operationId: UpdateIntegration
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: integrationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelUpdateRequest'
+      responses:
+        '200':
+          description: Updated channel binding
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Integration'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Channel binding not found
+    delete:
+      summary: Unlink an integration
+      tags:
+        - Integrations
+      operationId: DeleteIntegration
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: integrationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Channel binding revoked
+        '401':
+          description: Unauthorized
+        '404':
+          description: Channel binding not found
+
+  /eisenhower-matrix:
+    get:
+      summary: Get user Eisenhower Matrix exercises history
+      tags:
+        - Users
+      operationId: GetEisenhowerMatrix
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of user Eisenhower Matrix exercises
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EisenhowerMatrixPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /eisenhower-matrix/{id}:
+    get:
+      summary: Get a specific Eisenhower Matrix exercise by ID
+      tags:
+        - Users
+      operationId: GetEisenhowerMatrixId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Eisenhower Matrix exercise data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EisenhowerMatrixExercise'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found
+
+  /wheel-of-life:
+    get:
+      summary: Get user Wheel of Life exercises history
+      tags:
+        - Users
+      operationId: GetWheelOfLife
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of user Wheel of Life exercises
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WheelOfLifePaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /wheel-of-life/{id}:
+    get:
+      summary: Get a specific Wheel of Life exercise by ID
+      tags:
+        - Users
+      operationId: GetWheelOfLifeId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Wheel of Life exercise data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WheelOfLifeExercise'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Exercise not found
+
+  /memories:
+    get:
+      summary: Get user memories
+      tags:
+        - Users
+      operationId: GetMemories
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MemoryCategory'
+        - name: text
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of user memories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /memories/{memoryId}:
+    delete:
+      summary: Delete a specific memory
+      tags:
+        - Users
+      operationId: DeleteMemory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: memoryId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Memory not found
+
+  /commitments:
+    get:
+      summary: List the user's present and future commitments
+      description: >-
+        Returns one entry per commitment with its next occurrence (nextDate):
+        recurring commitments resolve to the next matching weekday (today counts),
+        one-time commitments to their date. Ordered by nextDate ascending, so
+        overdue one-time commitments (past date, not done) come first, then today,
+        then upcoming. One-time commitments already completed on a past date are
+        excluded. done/status reflect today's completion state for commitments due
+        today.
+      tags:
+        - Users
+      operationId: GetCommitments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: history
+          in: query
+          description: If true, returns all commitments (past and future), sorted by created date descending.
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The user's commitments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Commitment'
+        '401':
+          description: Unauthorized
+    post:
+      summary: Create a manual commitment
+      tags:
+        - Users
+      operationId: CreateCommitment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommitmentRequest'
+      responses:
+        '201':
+          description: Commitment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commitment'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+
+  /commitments/{commitmentId}:
+    patch:
+      summary: Update a commitment (edit fields and/or toggle completion)
+      tags:
+        - Users
+      operationId: UpdateCommitment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commitmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommitmentRequest'
+      responses:
+        '200':
+          description: Commitment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commitment'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Commitment not found
+    delete:
+      summary: Delete a commitment
+      tags:
+        - Users
+      operationId: DeleteCommitment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: commitmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Commitment deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Commitment not found
+
+
+  /usage-calendar:
+    get:
+      summary: Get usage calendar statistics for a given month
+      tags:
+        - Users
+      operationId: GetUsageCalendar
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+            description: "YYYY-MM format"
+      responses:
+        '200':
+          description: Usage calendar stats and daily sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageCalendarResponse'
+        '400':
+          description: Bad request (invalid month format)
+        '401':
+          description: Unauthorized
+
+  /streak:
+    get:
+      summary: Get user streak information
+      tags:
+        - Users
+      operationId: GetStreak
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Streak information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreakResponse'
+        '401':
+          description: Unauthorized
+
+  /journey:
+    get:
+      summary: Get today's proposed growth session
+      tags:
+        - DailyGrowth
+      operationId: GetDailyJourney
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Session proposal for the day (can be null if none)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JourneySessionResponse'
+        '401':
+          description: Unauthorized
+
+  /quotes/random:
+    get:
+      summary: Get a random personal development quote
+      tags:
+        - Quotes
+      operationId: GetRandomQuote
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/QuoteCategory'
+      responses:
+        '200':
+          description: A random quote
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+
+  /admin/leads:
+    get:
+      summary: List business leads
+      tags:
+        - Admin
+      security:
+        - BearerAuth: []
+      operationId: AdminListLeads
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: state
+          schema:
+            type: string
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: country
+          schema:
+            type: string
+        - in: query
+          name: language
+          schema:
+            type: string
+        - in: query
+          name: size
+          schema:
+            type: string
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadListResponse'
+
+  /admin/leads/{id}:
+    patch:
+      summary: Update a lead
+      tags:
+        - Admin
+      security:
+        - BearerAuth: []
+      operationId: AdminUpdateLead
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLeadRequest'
+      responses:
+        '200':
+          description: Lead updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeadAdmin'
+
+  /admin/users:
+    get:
+      summary: List users for admin
+      tags:
+        - Admin
+      operationId: GetAdminUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: country
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: preferredLanguage
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: createdAt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: waitlisted
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: "true returns only pending waitlist signups; false only provisioned users; omitted returns both (waitlist first)."
+      responses:
+        '200':
+          description: Paginated users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /admin/users/{id}:
+    get:
+      summary: Get user details for admin
+      tags:
+        - Admin
+      operationId: GetAdminUsersId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+    patch:
+      summary: Update user details or status (e.g. isActive) for admin
+      tags:
+        - Admin
+      operationId: PatchAdminUsersId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserPatchRequest'
+      responses:
+        '200':
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '404':
+          description: User not found
+
+  /sessions:
+    get:
+      summary: List user's sessions
+      tags:
+        - Users
+      operationId: GetSessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Paginated list of sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSessionPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /admin/sessions:
+    get:
+      summary: List communication sessions for admin
+      tags:
+        - Admin
+      operationId: GetAdminSessions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: userName
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: userCountry
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: userLanguage
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunicationSessionPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /admin/dashboard:
+    get:
+      summary: Aggregate dashboard over users and communication sessions
+      tags:
+        - Admin
+      operationId: GetAdminDashboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: false
+          description: Scope session-based metrics to sessions started at or after this time (RFC3339).
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          required: false
+          description: Scope session-based metrics to sessions started at or before this time (RFC3339).
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Aggregate dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDashboard'
+        '401':
+          description: Unauthorized
+
+  /test-data:
+    get:
+      summary: Get test setup documentation
+      tags:
+        - Admin
+      operationId: GetTestDataDocs
+      responses:
+        '200':
+          description: HTML documentation for test setup personas
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /admin/test-setup:
+    post:
+      summary: Set up database for testing using a persona
+      tags:
+        - Admin
+      operationId: SetupTestData
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/SetupTestDataRequest'
+      responses:
+        '200':
+          description: Test data setup completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request or unsupported persona
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (Admin only)
+
+  /admin/reset-account:
+    post:
+      summary: Reset the calling admin's own account to a freshly created one (test only)
+      description: >
+        Returns the caller's account to the state it had the moment it was provisioned:
+        every user-scoped row is deleted — session history, exercises, memories,
+        commitments and their plans, badges, notifications, recommendations, the chat
+        conversation, feedback (images included), the minutes ledger and the channel
+        usage records — and the profile row goes back to its column defaults, with the
+        state set to ONBOARDING_INTRO (where a new customer starts) and the details that
+        intro collects (country, date of birth, gender) cleared so it collects them again.
+        The balance drops to zero and the WhatsApp/Telegram binding and push tokens are
+        removed, so the account is reachable only by signing in again.
+
+
+        What survives is what identifies the account rather than what it did: the id, the
+        sign-in identity (email, phone, name), the data region, the language, and the
+        consent timestamps.
+
+
+        This is deliberately stronger than anything a user can trigger. `DELETE /me/data`
+        redacts sessions and keeps both the ledger and the messaging connection on
+        purpose; this endpoint exists for QA, is admin-only, and acts solely on the
+        caller's own account.
+      tags:
+        - Admin
+      operationId: ResetAccount
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Account reset
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (Admin only)
+        '404':
+          description: User not found
+
+  /admin/users/{id}/credits:
+    post:
+      summary: Credit session minutes to a user (manual, until a payment provider exists)
+      tags:
+        - Admin
+      operationId: PostAdminUsersIdCredits
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreditRequest'
+      responses:
+        '201':
+          description: Credit applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceTransaction'
+        '400':
+          description: Invalid amount or type
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (Admin only)
+        '404':
+          description: User not found
+
+  /recommendations:
+    get:
+      summary: Get user recommendations
+      tags:
+        - Users
+      operationId: GetRecommendations
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [book, article, video, podcast, other]
+      responses:
+        '200':
+          description: Paginated list of user recommendations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationPaginatedResponse'
+        '401':
+          description: Unauthorized
+
+  /chat/sessions/{sessionID}/feedback:
+    post:
+      summary: Submit user feedback for a completed coaching session
+      tags:
+        - Chat
+      operationId: SubmitSessionFeedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionID
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitFeedbackRequest'
+      responses:
+        '200':
+          description: Feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+        '400':
+          description: Bad request / validation error
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (session belongs to another user)
+        '404':
+          description: Session not found
+
+  /webhooks/whatsapp:
+    get:
+      summary: Meta WhatsApp verification webhook
+      tags:
+        - Webhooks
+      operationId: GetWebhooksWhatsapp
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Meta WhatsApp incoming messages webhook
+      tags:
+        - Webhooks
+      operationId: PostWebhooksWhatsapp
+      responses:
+        '200':
+          description: OK
+
+  /webhooks/telegram/{secret}:
+    post:
+      summary: Telegram incoming updates webhook
+      tags:
+        - Webhooks
+      operationId: PostWebhooksTelegramSecret
+      parameters:
+        - name: secret
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+
+  /webhooks/twilio/sms:
+    post:
+      summary: Twilio incoming SMS webhook
+      tags:
+        - Webhooks
+      operationId: PostWebhooksTwilioSms
+      responses:
+        '200':
+          description: OK
+
+  /webhooks/revenuecat:
+    post:
+      summary: RevenueCat purchase events webhook (credits the minutes balance)
+      tags:
+        - Webhooks
+      operationId: PostWebhooksRevenuecat
+      responses:
+        '200':
+          description: Event processed (or deliberately ignored/duplicate)
+        '401':
+          description: Missing or wrong Authorization header
+        '500':
+          description: Transient failure — RevenueCat should retry
+        '503':
+          description: REVENUECAT_WEBHOOK_AUTH not configured on this deployment
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LeadRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        company:
+          type: string
+        country:
+          type: string
+        size:
+          type: string
+        message:
+          type: string
+        origin:
+          type: string
+        language:
+          type: string
+      required:
+        - name
+        - email
+        - company
+        - country
+        - size
+
+    LeadAdmin:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        company:
+          type: string
+        country:
+          type: string
+        size:
+          type: string
+        message:
+          type: string
+        origin:
+          type: string
+        language:
+          type: string
+        state:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LeadListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeadAdmin'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    UpdateLeadRequest:
+      type: object
+      properties:
+        state:
+          type: string
+      required:
+        - state
+
+    FCMTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        platform:
+          type: string
+      required:
+        - token
+
+    Integration:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+          description: Channel provider ("whatsapp")
+        status:
+          type: string
+          description: Binding status ("pending", "active", "revoked")
+        maskedExternalId:
+          type: string
+          description: Masked phone/chat id (e.g. "+3519•••••78"), only set when linked
+        replyMode:
+          type: string
+          enum: [text, audio, auto]
+          description: How Rumi answers ("text", "audio", or "auto")
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - provider
+        - status
+        - replyMode
+        - createdAt
+
+    ChannelLinkResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: One-time link code (e.g. "RUMI-7K3M2X")
+        waLink:
+          type: string
+          description: wa.me deep link that pre-fills the code
+        expiresAt:
+          type: string
+          format: date-time
+      required:
+        - code
+        - waLink
+        - expiresAt
+
+    ChannelUpdateRequest:
+      type: object
+      properties:
+        replyMode:
+          type: string
+          enum: [text, audio, auto]
+          description: How Rumi answers ("text", "audio", or "auto")
+
+    VerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        type:
+          type: string
+          enum: [email, phone]
+        event:
+          type: string
+      required:
+        - type
+
+    VerificationCheck:
+      type: object
+      properties:
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        type:
+          type: string
+          enum: [email, phone]
+        code:
+          type: string
+      required:
+        - type
+        - code
+
+    VerificationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        verified:
+          type: boolean
+        verificationId:
+          type: string
+
+    LoginWithCodeRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [email, phone]
+        identifier:
+          type: string
+        code:
+          type: string
+      required:
+        - type
+        - identifier
+        - code
+
+    UpdateIdentifierRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [email, phone]
+        identifier:
+          type: string
+        verificationId:
+          type: string
+      required:
+        - type
+        - identifier
+        - verificationId
+
+    GoogleLoginRequest:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        idToken:
+          type: string
+
+    AppleLoginRequest:
+      type: object
+      properties:
+        identityToken:
+          type: string
+          description: JWT identity token from ASAuthorizationAppleIDCredential.
+        email:
+          type: string
+          description: >-
+            Email as reported by the client on first authorization. Informational
+            only — the server trusts the verified email inside the identity token.
+        name:
+          type: string
+          description: >-
+            Full name from the first authorization (Apple never provides it again).
+            Informational only; login never creates accounts.
+      required:
+        - identityToken
+
+    LinkAppleRequest:
+      type: object
+      properties:
+        identityToken:
+          type: string
+          description: JWT identity token from ASAuthorizationAppleIDCredential.
+      required:
+        - identityToken
+
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+        - refreshToken
+
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+        refreshToken:
+          type: string
+        dataRegion:
+          type: string
+          enum: [eu, us]
+          description: The region where this user's data is stored.
+        apiBaseUrl:
+          type: string
+          description: Base URL of the regional API the client must use for all non-auth calls.
+
+    SSOVerificationRequest:
+      type: object
+      properties:
+        idToken:
+          type: string
+        accessToken:
+          type: string
+        type:
+          type: string
+          enum: [google, apple]
+      required:
+        - type
+
+    WaitlistRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        name:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+        dataRegion:
+          type: string
+          enum: [eu, us]
+          default: eu
+          description: Where the user's data will be stored. Chosen by the user at signup.
+        preferredLanguage:
+          type: string
+        emailVerificationId:
+          type: string
+        phoneVerificationId:
+          type: string
+        googleIdToken:
+          type: string
+        googleAccessToken:
+          type: string
+        appleIdentityToken:
+          type: string
+          description: Sign in with Apple identity token (iOS). Replaces OTP verification.
+        termsAndConditionsAccepted:
+          type: boolean
+        marketingAccepted:
+          type: boolean
+        aiAccepted:
+          type: boolean
+      required:
+        - name
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        phoneNumber:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+        coachGender:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+        dataRegion:
+          type: string
+          enum: [eu, us]
+        preferredLanguage:
+          type: string
+        isActive:
+          type: boolean
+        waitlisted:
+          type: boolean
+          description: "True for a waitlist signup whose regional profile has not been provisioned yet; activating the user provisions it."
+        createdAt:
+          type: string
+          format: date-time
+          description: "Signup time (for waitlisted users, when they joined the waitlist)."
+        theme:
+          type: string
+        focusArea:
+          type: string
+          nullable: true
+          description: "The Wheel of Life area the user committed to work on (chosen during onboarding), in the user's language."
+        coachVoice:
+          type: string
+          enum: [algieba, charon, despina, enceladus, gacrux, orus, vindemiatrix]
+        termsAndConditionsAcceptedAt:
+          type: string
+          format: date-time
+        marketingAcceptedAt:
+          type: string
+          format: date-time
+        lastOnlineAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastPlatform:
+          type: string
+          nullable: true
+        aiAcceptedAt:
+          type: string
+          format: date-time
+        balanceSeconds:
+          type: integer
+          format: int64
+          description: >-
+            Remaining voice-session balance in seconds (may be negative). Starting a
+            billable session requires at least 60 seconds — anything below that is
+            refused on the session WebSocket, which sends an INSUFFICIENT_BALANCE error
+            frame and then closes with code 4402.
+        inFirstJourney:
+          type: boolean
+          description: >-
+            True while the user still has free introductory sessions left — the onboarding
+            intro and the Vision session it hands over to — and is therefore exempt from the
+            balance gate. Derived from what those sessions produce: the profile details the
+            intro collects (country, date of birth, gender) and the ideal-life vision the
+            Vision session writes. It stays true while either is still missing, so a session
+            the user abandoned after a few seconds costs them nothing.
+
+            Informational only. Clients must NOT gate on it: the WebSocket is the
+            enforcement and it now refuses in a form a client can read, so an app that
+            pre-empts the call is keeping a second copy of a billing rule that will drift
+            from this one. The name predates the change of rule and is kept because shipped
+            app builds read it.
+        chatHistoryRetentionDays:
+          type: integer
+          description: How long the WhatsApp/Telegram conversation is kept, in days; 0 keeps it indefinitely.
+
+    BalanceTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: For a grouped message row, the id of the newest debit in the run.
+        type:
+          type: string
+          enum: [subscription, top_up, session_usage, session_free, message_usage, refund]
+        amountSeconds:
+          type: integer
+          format: int64
+          description: >-
+            Signed: positive = credit, negative = debit. Always 0 for session_free —
+            the row exists so the history accounts for the session, not to move money.
+            For a grouped message row, the run's debits summed.
+        balanceAfter:
+          type: integer
+          format: int64
+          description: The balance after this row applied (after the newest debit, for a grouped message row).
+        sessionId:
+          type: string
+          description: Communication session charged by a session_usage debit (or recorded by a session_free row)
+        sessionType:
+          type: string
+          description: Type of the session (if applicable)
+        product:
+          type: string
+          description: Plan/package label for purchase credits and refunds
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: When this row applied (the newest debit's time, for a grouped message row).
+        day:
+          type: string
+          description: "Grouped message rows only: the calendar day of the run, YYYY-MM-DD in the request's X-Timezone."
+        messageCount:
+          type: integer
+          description: "Grouped message rows only: how many charged replies the run collapses."
+        plan:
+          type: string
+          enum: [monthly, annual]
+          description: >-
+            Billing cadence of a subscription credit, derived server-side from the
+            product id so clients translate an enum instead of parsing store slugs.
+            Subscription rows only, and absent when the product names neither cadence.
+
+    BalanceTransactionPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BalanceTransaction'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    UsageEntry:
+      type: object
+      required:
+        - kind
+        - occurredAt
+        - seconds
+      properties:
+        kind:
+          type: string
+          enum: [session, messages]
+        occurredAt:
+          type: string
+          format: date-time
+          description: "Session end for sessions; the day's latest message for message groups. Sort key of the feed."
+        seconds:
+          type: integer
+          format: int64
+          description: >-
+            How long this entry ran, in seconds (always positive). For a free session
+            this is the real duration even though nothing was charged — see `free`, and
+            note it is therefore NOT always what came off the balance.
+        free:
+          type: boolean
+          description: >-
+            True when this session was one of the free introductory ones and cost the
+            user nothing. Session entries only. Free sessions are shown rather than
+            hidden so the history accounts for every session the user actually had;
+            they contribute to sessionCount and freeSessionSeconds, never to
+            sessionSeconds.
+        sessionId:
+          type: string
+          description: Communication session this entry billed (session entries only)
+        sessionType:
+          type: string
+          description: Type of the billed session (session entries only)
+        date:
+          type: string
+          description: "Day the messages were sent (YYYY-MM-DD in the request timezone) — message entries only"
+        messageCount:
+          type: integer
+          description: >-
+            Charged replies in this day group (message entries only). Proactive nudges,
+            templates and system notices cost the user nothing and are not listed.
+
+    UsageTotals:
+      type: object
+      properties:
+        totalSeconds:
+          type: integer
+          format: int64
+          description: sessionSeconds + messageSeconds
+        sessionSeconds:
+          type: integer
+          format: int64
+          description: Seconds actually charged to the balance; excludes free sessions.
+        freeSessionSeconds:
+          type: integer
+          format: int64
+          description: Seconds spent in free introductory sessions, charged to nobody.
+        sessionCount:
+          type: integer
+          description: Every session in the feed, free ones included.
+        messageSeconds:
+          type: integer
+          format: int64
+        messageCount:
+          type: integer
+          description: Total charged replies (not day groups); excludes anything sent unprompted.
+
+    UsageHistoryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsageEntry'
+        totals:
+          $ref: '#/components/schemas/UsageTotals'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    AdminCreditRequest:
+      type: object
+      required:
+        - type
+      properties:
+        amountSeconds:
+          type: integer
+          format: int64
+          description: Exactly one of amountSeconds/amountMinutes must be set and positive
+        amountMinutes:
+          type: integer
+          description: Convenience alternative to amountSeconds (credited as minutes × 60)
+        type:
+          type: string
+          enum: [subscription, top_up]
+        product:
+          type: string
+          description: Plan/package label (e.g. "monthly_120", "topup_60")
+        description:
+          type: string
+
+    Memory:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        category:
+          $ref: '#/components/schemas/MemoryCategory'
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    MemoryPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Memory'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    MemoryCategory:
+      type: string
+      enum:
+        - identity
+        - values
+        - needs
+        - context
+        - obstacles
+        - insight
+
+    Commitment:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [one_time, recurring]
+        origin:
+          type: string
+          enum: [plan, manual, behavior]
+          description: "Where the commitment came from: 'plan' (created by a coaching session as part of the commitment plan), 'manual' (added by the user), or 'behavior' (projected from a behavior plan)."
+        days:
+          type: array
+          items:
+            type: integer
+          description: "Days of the week for recurring commitments (1 = Monday, 2 = Tuesday, ..., 7 = Sunday)"
+        date:
+          type: string
+          description: "Specific date for one-time commitments (YYYY-MM-DD)"
+        nextDate:
+          type: string
+          description: "Next occurrence of this commitment (YYYY-MM-DD, user's timezone): the next matching weekday for recurring, the date for one-time (past when overdue). Present on the /commitments list, absent in history mode."
+        occurrenceDate:
+          type: string
+          description: "The day this entry refers to (YYYY-MM-DD, user's timezone). Only present with history=true, where each entry is ONE past occurrence rather than the commitment as a whole — a recurring commitment yields one entry per scheduled day. Together with id it uniquely keys a history row."
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: "When a recurring commitment was ended by the user. It stops generating occurrences from then on, but past ones remain in history. Null while it is still running."
+        status:
+          type: string
+          enum: [pending, completed, overdue, missed]
+          description: "In the normal list: pending, completed or overdue for the commitment as a whole. In history mode it describes that single past occurrence — 'completed' if it was done that day, 'missed' if it was not."
+      required:
+        - id
+        - title
+        - type
+        - origin
+        - status
+
+    ToggleCommitmentRequest:
+      type: object
+      properties:
+        done:
+          type: boolean
+      required:
+        - done
+
+    CreateCommitmentRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [one_time, recurring]
+        days:
+          type: array
+          items:
+            type: integer
+          description: "Days of the week for recurring commitments (1 = Monday, ..., 7 = Sunday)"
+        date:
+          type: string
+          description: "Specific date for one-time commitments (YYYY-MM-DD)"
+        endDate:
+          type: string
+          nullable: true
+          description: "The day a recurring commitment stops (YYYY-MM-DD, user's timezone). Coaching sessions set this when the habit is agreed, so it has a horizon to complete rather than running forever. Ignored for one-time commitments — their own date is their end."
+      required:
+        - title
+        - type
+
+    UpdateCommitmentRequest:
+      type: object
+      description: "Partial update. Any provided field is applied; omitted fields are unchanged."
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [one_time, recurring]
+        days:
+          type: array
+          items:
+            type: integer
+        date:
+          type: string
+          nullable: true
+        endDate:
+          type: string
+          nullable: true
+          description: "Set the day a recurring commitment stops (YYYY-MM-DD). Send null to remove the horizon and let it run on."
+        done:
+          type: boolean
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+        theme:
+          type: string
+        coachGender:
+          type: string
+        country:
+          type: string
+        region:
+          type: string
+        preferredLanguage:
+          type: string
+        coachVoice:
+          type: string
+          enum: [algieba, charon, despina, enceladus, gacrux, orus, vindemiatrix]
+        chatHistoryRetentionDays:
+          type: integer
+          enum: [0, 3, 7, 30]
+          description: >
+            How long the WhatsApp/Telegram conversation is kept, in days. 0 keeps it
+            indefinitely and is the only value that gives up the guarantee, so the app
+            should say so rather than list it plainly. Changing this rewrites the expiry of
+            the existing conversation, so lowering it takes effect immediately and
+            retroactively. Nothing below 3 days is offered: the coach replays the last 72
+            hours, and a shorter retention would have it losing the thread mid-exchange.
+        termsAndConditionsAccepted:
+          type: boolean
+          description: Consent — see aiAccepted for how all three behave. Required to use the app.
+        marketingAccepted:
+          type: boolean
+          description: Consent — see aiAccepted for how all three behave. The one optional consent.
+        aiAccepted:
+          type: boolean
+          description: >
+            Consent to the user's voice being processed by Google's AI. Required to use the
+            app: sessions are the product and they cannot run without it.
+
+            These three are collected at registration, but not everyone arrives that way.
+            "Continue with Apple" (or Google) on the sign-in screen creates an account
+            without passing through the signup steps, so such a user holds none of them —
+            not even the Terms — and neither do accounts predating a given consent. Those
+            users are asked in the app before their first session and the answers land here,
+            which is why all three are writable and not just the AI one.
+
+            Write-only and one-way, all three. Only `true` is meaningful: it stamps the
+            matching `*AcceptedAt` with the server's clock, and does so once — a second
+            `true` leaves the original moment intact, because when consent was first given
+            is the auditable fact. `false` is ignored rather than treated as a withdrawal;
+            revoking the required ones means deleting the account, not editing a profile
+            field. The timestamps are returned on the User schema as
+            `termsAndConditionsAcceptedAt`, `marketingAcceptedAt` and `aiAcceptedAt`.
+
+    FeedbackRequest:
+      type: object
+      required: [category, description]
+      properties:
+        category:
+          type: string
+          enum: [bug, feedback, feature]
+        description:
+          type: string
+          description: The user's own words. Truncated past 8000 characters rather than rejected.
+        images:
+          type: array
+          maxItems: 3
+          items:
+            type: string
+            description: Base64-encoded image, with or without a data-URL prefix.
+        context:
+          $ref: '#/components/schemas/FeedbackContext'
+
+    FeedbackContext:
+      type: object
+      description: >
+        Diagnostics gathered by the client. Every field is optional — send whatever the
+        platform can tell you. A bug report without a version and a screen name costs a
+        round trip to the user before anyone can act on it, which is usually a report lost.
+      properties:
+        appVersion:
+          type: string
+          description: e.g. "1.4.2"
+        buildNumber:
+          type: string
+        osVersion:
+          type: string
+          description: e.g. "iOS 17.2", "Android 14", or the browser and version on web.
+        deviceModel:
+          type: string
+          description: e.g. "iPhone15,3". Mobile only.
+        locale:
+          type: string
+          description: The app's active language, which is not always the device's.
+        timezone:
+          type: string
+          description: IANA name, so timestamps in the report can be read in the user's own day.
+        screen:
+          type: string
+          description: Where the user was when they opened the form, e.g. "(tabs)/growth".
+        screenSize:
+          type: string
+          description: e.g. "393x852". Layout bugs are unreproducible without it.
+        userAgent:
+          type: string
+          description: Web only.
+
+    FeedbackResponse:
+      type: object
+      properties:
+        id:
+          type: string
+
+    PaginationInfo:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        itemsPerPage:
+          type: integer
+
+    UserPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    CommunicationSession:
+      type: object
+      properties:
+        id:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+        sessionType:
+          type: string
+        recapTitle:
+          type: string
+          nullable: true
+          description: "A few words naming what the session was about, in the user's language. Use it as the row heading in the sessions list; fall back to the session-type label when absent."
+        recap:
+          type: string
+          nullable: true
+          description: "Short user-facing summary (2-3 sentences) of what the session covered and what the user took from it, in their language. Generated after the session ends, so it is absent for sessions still in progress, for very short ones, and always for the onboarding intro."
+        userSessionInsight:
+          type: string
+          nullable: true
+        userEvaluation:
+          type: number
+          format: float
+          nullable: true
+        userFeedback:
+          type: string
+          nullable: true
+
+    CommunicationSessionAdmin:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        userCountry:
+          type: string
+        userLanguage:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        language:
+          type: string
+        sessionType:
+          type: string
+        totalCostUsd:
+          type: number
+          format: float
+        inputTextTokens:
+          type: integer
+        outputTextTokens:
+          type: integer
+        inputAudioTokens:
+          type: integer
+        outputAudioTokens:
+          type: integer
+        aiNotes:
+          type: string
+          nullable: true
+        aiEvaluation:
+          type: number
+          format: float
+          nullable: true
+        userEvaluation:
+          type: number
+          format: float
+          nullable: true
+        userFeedback:
+          type: string
+          nullable: true
+        userSessionInsight:
+          type: string
+          nullable: true
+
+    CommunicationSessionPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunicationSessionAdmin'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    UserSessionPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunicationSession'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    AdminDashboard:
+      type: object
+      properties:
+        periodFrom:
+          type: string
+          format: date-time
+          nullable: true
+        periodTo:
+          type: string
+          format: date-time
+          nullable: true
+        users:
+          $ref: '#/components/schemas/AdminDashboardUsers'
+        sessions:
+          $ref: '#/components/schemas/AdminDashboardSessions'
+        quality:
+          $ref: '#/components/schemas/AdminDashboardQuality'
+        cost:
+          $ref: '#/components/schemas/AdminDashboardCost'
+
+    AdminDashboardUsers:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        newUsers:
+          type: integer
+          description: Users created within [from,to] when a window is given, otherwise within the last 30 days.
+        activeUsers:
+          type: integer
+          description: Distinct users with at least one session in the window.
+        returningUsers:
+          type: integer
+          description: Distinct users with two or more sessions in the window.
+        avgSessionsPerActiveUser:
+          type: number
+          format: float
+        onboardingCompleted:
+          type: integer
+          description: Users whose state has advanced past onboarding (current snapshot, not windowed).
+        onboardingInProgress:
+          type: integer
+        demographics:
+          $ref: '#/components/schemas/AdminUserDemographics'
+
+    AdminUserDemographics:
+      type: object
+      properties:
+        byCountry:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDemographicStat'
+        byGender:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDemographicStat'
+        byLanguage:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDemographicStat'
+        byAgeBucket:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDemographicStat'
+
+    AdminDemographicStat:
+      type: object
+      properties:
+        key:
+          type: string
+        userCount:
+          type: integer
+
+    AdminDashboardSessions:
+      type: object
+      properties:
+        totalSessions:
+          type: integer
+        totalDurationMinutes:
+          type: number
+          format: float
+        avgSessionDurationMinutes:
+          type: number
+          format: float
+        bySessionType:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSessionTypeStat'
+
+    AdminSessionTypeStat:
+      type: object
+      properties:
+        sessionType:
+          type: string
+        sessionCount:
+          type: integer
+        avgDurationMinutes:
+          type: number
+          format: float
+        avgCostUsd:
+          type: number
+          format: float
+        totalCostUsd:
+          type: number
+          format: float
+
+    AdminDashboardQuality:
+      type: object
+      properties:
+        avgAiEvaluation:
+          type: number
+          format: float
+        avgUserEvaluation:
+          type: number
+          format: float
+        ratedSessions:
+          type: integer
+          description: Sessions with a user-submitted evaluation.
+        reviewedSessions:
+          type: integer
+          description: Sessions with an AI evaluation.
+
+    AdminDashboardCost:
+      type: object
+      properties:
+        totalCostUsd:
+          type: number
+          format: float
+        avgCostPerSessionUsd:
+          type: number
+          format: float
+        avgCostPerMinuteUsd:
+          type: number
+          format: float
+        avgCostPerUserUsd:
+          type: number
+          format: float
+
+    EisenhowerMatrixTask:
+      type: object
+      properties:
+        task:
+          type: string
+        reasoning:
+          type: string
+        quadrant:
+          type: string
+
+    EisenhowerMatrixExercise:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        sessionId:
+          type: string
+        data:
+          $ref: '#/components/schemas/EisenhowerMatrixData'
+        createdAt:
+          type: string
+          format: date-time
+
+    EisenhowerMatrixPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EisenhowerMatrixExercise'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    WheelOfLifeExercise:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        sessionId:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WheelOfLifeItem'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    WheelOfLifeItem:
+      type: object
+      properties:
+        name:
+          type: string
+        currentScore:
+          type: number
+        reasoning:
+          type: string
+
+    WheelOfLifePaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WheelOfLifeExercise'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    EisenhowerMatrixData:
+      type: object
+      properties:
+        urgent_important:
+          type: array
+          items:
+            $ref: '#/components/schemas/EisenhowerMatrixTask'
+        not_urgent_important:
+          type: array
+          items:
+            $ref: '#/components/schemas/EisenhowerMatrixTask'
+        urgent_not_important:
+          type: array
+          items:
+            $ref: '#/components/schemas/EisenhowerMatrixTask'
+        not_urgent_not_important:
+          type: array
+          items:
+            $ref: '#/components/schemas/EisenhowerMatrixTask'
+
+    StreakResponse:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        longestStreak:
+          type: integer
+        totalDays:
+          type: integer
+        calendar:
+          type: array
+          items:
+            type: string
+            format: date
+
+
+    UsageCalendarResponse:
+      type: object
+      properties:
+        dayStreak:
+          type: integer
+        sessionsCount:
+          type: integer
+        hours:
+          type: number
+          format: float
+        days:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              kind:
+                type: string
+                enum: [session, checkin, none]
+              sessions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommunicationSession'
+
+    JourneySessionResponse:
+      type: object
+      properties:
+        session:
+          $ref: '#/components/schemas/SessionType'
+          nullable: true
+        mode:
+          type: string
+          enum:
+            - start
+            - resume
+          nullable: true
+        quote:
+          $ref: '#/components/schemas/Quote'
+          nullable: true
+        theme:
+          type: string
+          nullable: true
+          description: "Visual theme override picked by the AI at the end of the last session. Only present while that override is active — absent when the user's own theme choice (on /me, PATCH /me clears the override) should stand. Clients must not change the theme when this is absent."
+        nextSession:
+          $ref: '#/components/schemas/SessionInfo'
+          nullable: true
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionInfo'
+          nullable: true
+          description: "List of upcoming deep sessions on the user's growth journey and their estimated availability dates."
+        focusArea:
+          type: string
+          nullable: true
+          description: "The user's Current Focus — the Wheel of Life area being prioritized (chosen during onboarding), in the user's language."
+
+    SessionInfo:
+      type: object
+      description: "The next deep session on the user's growth journey and when it becomes available, so the app can preview the upcoming chapter."
+      properties:
+        session:
+          $ref: '#/components/schemas/SessionType'
+        availableAt:
+          type: string
+          format: date-time
+          description: "When the session unlocks. May be in the past, meaning it is available now."
+      required:
+        - session
+        - availableAt
+
+    SessionType:
+      type: string
+      enum:
+        - onboarding
+        - session_vision
+        - session_movement
+        - session_values
+        - session_energy
+        - session_decisions
+        - session_beliefs
+        - session_identity
+        - session_acceptance
+        - session_priorities
+        - checkin
+
+    Quote:
+      type: object
+      properties:
+        id:
+          type: string
+        quote:
+          type: string
+        author:
+          type: string
+          nullable: true
+        category:
+          $ref: '#/components/schemas/QuoteCategory'
+
+    QuoteCategory:
+      type: string
+      enum:
+        - growth
+        - resilience
+        - action
+        - mindset
+        - wisdom
+        - purpose
+
+    AdminUserPatchRequest:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+
+    SetupTestDataRequest:
+      type: object
+      properties:
+        sessionType:
+          type: string
+          enum:
+            - new_user
+            - onboarding_ideal_vision
+            - onboarding_wheel
+            - onboarding_metaphor
+            - onboarding_ending
+            - checkin_daily_first
+            - checkin_daily_same_day
+            - checkin_daily_consecutive
+            - checkin_daily_after_days
+            - checkin_daily_after_weeks
+            - checkin_daily_after_long
+            - stressed
+            - coaching_session_ready
+      required:
+        - sessionType
+
+    Recommendation:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        sessionId:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [book, article, video, podcast, other]
+        author:
+          type: string
+        url:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    RecommendationPaginatedResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    SubmitFeedbackRequest:
+      type: object
+      properties:
+        evaluation:
+          type: number
+          format: double
+          description: "Numeric evaluation rating (decimal, 0 to 10)"
+        feedback:
+          type: string
+          description: "Written feedback text notes"
+      required:
+        - evaluation
+
+    ProfileVision:
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+        craftedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    ProfileBalance:
+      type: object
+      properties:
+        completedAt:
+          type: string
+          format: date
+          nullable: true
+        data:
+          type: string
+          nullable: true
+          description: "JSON array of WheelOfLifeItem"
+
+    ProfileProgress:
+      type: object
+      properties:
+        currentStreak:
+          type: integer
+        bestStreak:
+          type: integer
+        totalSessions:
+          type: integer
+        hoursWithRumi:
+          type: number
+          format: float
+        insightsDiscovered:
+          type: integer
+        commitmentsKept:
+          type: integer
+
+    BadgeType:
+      type: string
+      description: >-
+        Profile badges v2. The app renders these in this order as a 3x5 grid.
+        Rows in user_badges may still carry the retired goalReached type (granted
+        on behaviour-plan graduation) — kept for analytics; the app ignores types
+        it does not recognize.
+      enum:
+        - firstSession
+        - visionSet
+        - firstCommitment
+        - firstDeepSession
+        - alwaysWithYou
+        - threeDayStreak
+        - tenInsights
+        - allThemesExplored
+        - sevenDayStreak
+        - twentySessions
+        - twentyFiveCommitments
+        - thirtyDayStreak
+        - wheelRemapped
+        - areaImproved
+        - hundredSessions
+
+    ProfileBadge:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/BadgeType'
+        earnedAt:
+          type: string
+          format: date-time
+
+    UserProfileResponse:
+      type: object
+      properties:
+        focusArea:
+          type: string
+          description: The user's chosen Focus Area for their coaching journey.
+        vision:
+          $ref: '#/components/schemas/ProfileVision'
+        lifeBalance:
+          $ref: '#/components/schemas/ProfileBalance'
+        progress:
+          $ref: '#/components/schemas/ProfileProgress'
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileBadge'
+
+    UserDataExport:
+      type: object
+      description: A full export of all the user's data.
+      additionalProperties: true
+

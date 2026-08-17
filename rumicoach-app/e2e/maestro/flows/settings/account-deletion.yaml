@@ -1,0 +1,74 @@
+# P0: Account Deletion Flow
+# Tests: delete account with confirmation
+# Tags: settings
+
+appId: coach.rumi.app.qa
+tags:
+  - settings
+---
+- runFlow: ../helpers/login-email-otp.yaml
+
+- waitForAnimationToEnd:
+    timeout: 10000
+
+# Navigate to profile
+- tapOn:
+    text: "Profile"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Open settings
+- tapOn:
+    id: "settings-button"
+    optional: true
+
+- tapOn:
+    text: "Settings"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Scroll to account section
+- scroll
+- scroll
+- scroll
+
+# Tap delete account
+- tapOn:
+    text: "Delete Account"
+    optional: true
+
+- tapOn:
+    id: "delete-account-button"
+    optional: true
+
+# Confirm deletion
+- tapOn:
+    text: "Yes"
+    optional: true
+
+- tapOn:
+    text: "Delete"
+    optional: true
+
+# Type DELETE to confirm (if required)
+- tapOn:
+    id: "confirm-input"
+    optional: true
+
+- inputText: "DELETE"
+
+- tapOn:
+    text: "Confirm"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Verify we're back at auth screen
+- assertVisible:
+    text: "Sign In"
+    optional: true

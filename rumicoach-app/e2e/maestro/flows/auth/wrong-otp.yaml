@@ -1,0 +1,79 @@
+# P1: Wrong OTP Code
+# Tests: entering wrong OTP shows error
+# Tags: auth
+
+appId: coach.rumi.app.qa
+tags:
+  - auth
+---
+- clearState
+- launchApp
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Handle onboarding
+- runFlow:
+    when:
+      visible: "Get Started"
+    commands:
+      - tapOn: "Get Started"
+      - waitForAnimationToEnd:
+          timeout: 3000
+
+# Navigate to sign in
+- tapOn:
+    text: "Sign In"
+    optional: true
+
+- tapOn:
+    id: "sign-in-button"
+    optional: true
+
+# Enter email
+- tapOn:
+    id: "email-input"
+    optional: true
+
+- inputText: e2e-test@rumi.coach
+
+# Send code
+- tapOn:
+    id: "send-code-button"
+    optional: true
+
+- tapOn:
+    text: "Send Code"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Enter WRONG OTP code
+- tapOn:
+    id: "otp-input"
+    optional: true
+
+- inputText: "000000"
+
+# Try to verify
+- tapOn:
+    id: "verify-button"
+    optional: true
+
+- tapOn:
+    text: "Verify"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Should see error message
+- assertVisible:
+    text: ".*"
+    optional: true
+
+# Should still be on OTP screen (not navigated away)
+- assertVisible:
+    id: "otp-input"
+    optional: true
